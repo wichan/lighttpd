@@ -1,0 +1,15 @@
+{
+  "name": "default_campaign-2347b54d",
+  "displayName": "default_campaign",
+  "maxRunTime": "1200s",
+  "fuzzTargets": [
+    "fuzz_lighttpd.cc-b44ef030"
+  ],
+  "fuzzerRunConfigurations": [
+    {
+      "engine": "LIBFUZZER",
+      "sanitizer": "ADDRESS",
+      "numberOfJobs": 1
+    }
+  ]
+}

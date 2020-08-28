@@ -1,0 +1,9 @@
+{
+  "name": "fuzz_lighttpd.cc-b44ef030",
+  "displayName": "fuzz_lighttpd.cc",
+  "cSocket": {
+    "portNumber": 1337,
+    "targetLibrary": "./sconsbuild/static/build/libFuzzCIlighttpd.so"
+  },
+  "runArguments": ["-D", "-f", "$SRC/lighttpd.conf"]
+}

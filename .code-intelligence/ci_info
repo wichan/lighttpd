@@ -1,0 +1,22 @@
+{
+  "name": "projects/lighttpd-0aaa63c2",
+  "displayName": "lighttpd",
+  "buildScriptContent": "scons -j$(nproc) build_static=1 build_dynamic=0",
+  "details": {
+    "buildSystem": "CMAKE"
+  },
+  "projectEnvironment": {
+    "dockerBuild": {
+      "name": "cifuzz/builders:lighttpd",
+      "auth": {
+
+      }
+    },
+    "dockerRun": {
+      "name": "cifuzz/builders:lighttpd",
+      "auth": {
+
+      }
+    }
+  }
+}
