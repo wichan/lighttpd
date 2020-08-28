@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  PROJECT_NAME: lighttpd  
+
+jobs:
+  fuzz_default_campaign:
+    runs-on: ubuntu-latest
+    steps:
+      - id: start-fuzzing
+        name: Build And Start Fuzzing
+        uses: CodeIntelligenceTesting/github-actions/start-fuzzing@master
+        with:
+          cognito_user: ${{ secrets.COGNITO_USER }}
+          cognito_password: ${{ secrets.COGNITO_PASSWORD }}
+          project: ${{ env.PROJECT_NAME }}
+          test_collection: "default_campaign"          
+      - id: monitor-fuzzing
+        name: Monitor Fuzzing
+        uses: CodeIntelligenceTesting/github-actions/monitor-fuzzing@master
+        with:
+          cognito_user: ${{ secrets.COGNITO_USER }}
+          cognito_password: ${{ secrets.COGNITO_PASSWORD }}
+          project: ${{ env.PROJECT_NAME }}
+          test_collection_run: ${{ steps.start-fuzzing.outputs.test_collection_run }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pull_request_number: ${{ github.event.pull_request.number }}
+          owner: ${{ github.event.repository.owner.login }}
+          repository: ${{ github.event.repository.name }}
+      - id: report-coverage
+        name: Report Coverage
+        uses: CodeIntelligenceTesting/github-actions/report-coverage@master
+        if: ${{ success() || failure() }}
+        with:
+          cognito_user: ${{ secrets.COGNITO_USER }}
+          cognito_password: ${{ secrets.COGNITO_PASSWORD }}
+          project: ${{ env.PROJECT_NAME }}
+          test_collection: "default_campaign"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          pull_request_number: ${{ github.event.pull_request.number }}
+          owner: ${{ github.event.repository.owner.login }}
+          repository: ${{ github.event.repository.name }}
+          commit: ${{ github.sha }}
+          
