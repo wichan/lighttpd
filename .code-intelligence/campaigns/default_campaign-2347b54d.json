@@ -3,7 +3,7 @@
   "displayName": "default_campaign",
   "maxRunTime": "1200s",
   "fuzzTargets": [
-    "fuzz_lighttpd.cc-b44ef030"
+    "LmNvZGUtaW50ZWxsaWdlbmNlL2Z1enpfdGFyZ2V0cy9mdXp6X2xpZ2h0dHBkLmNj"
   ],
   "fuzzerRunConfigurations": [
     {

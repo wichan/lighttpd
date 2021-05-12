@@ -1,0 +1,4 @@
+{
+  "port_number": 1337,
+  "target_library": "./sconsbuild/static/build/libFuzzCIlighttpd.so"
+}
