@@ -14,7 +14,7 @@ run_container: "cifuzz/builder-lighttpd"
 
 ## A relative path to the build script that executes inside the container
 ## and builds the project. Relative to the project root directory.
-# build_script: ".code-intelligence/build.sh"
+build_script: ".code-intelligence/build.sh"
 
 ## Paths to the fuzz tests to execute
 fuzz_tests:
@@ -40,7 +40,7 @@ engines:
 runtime: "30m0s"
 
 ## The number of parallel executions per fuzz test
-# parallel_executions: 1
+parallel_executions: 1
 
 ## If true, do not initialize the seed corpus of the fuzz tests.
 # skip_initial_corpus: false
