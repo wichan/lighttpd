@@ -1,3 +1,10 @@
+description: >
+  lighttpd is a lightweight open-source web server that is described by its
+  developers as being secure, fast, standard compliant and flexible. It can be
+  used for efficiently serving static content, but also supports advanced
+  features, such as FastCGI, SCGI, Auth, Output-Compression, URL-Rewriting and
+  many more.
+
 ## The name of the container image used for building the fuzz tests
 build_container: "cifuzz/builder-lighttpd"
 
