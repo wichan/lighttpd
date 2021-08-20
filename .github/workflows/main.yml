@@ -7,8 +7,8 @@ on:
     branches: [ master ]
 
 env:
-  FUZZING_SERVER_ADDRESS: demo.code-intelligence.com:6773
-  WEB_APP_ADDRESS:  https://demo.code-intelligence.com
+  FUZZING_SERVER_ADDRESS: app.code-intelligence.com:6773
+  WEB_APP_ADDRESS:  https://app.code-intelligence.com
 
 
 jobs:
@@ -20,7 +20,7 @@ jobs:
         uses: CodeIntelligenceTesting/github-actions/start-fuzzing@v3
         with:
           ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN }}
-          project: "projects/organizations_82cc3b42e291d178_lighttpd-223f0fe0"
+          project: "projects/organizations_89d295318b3fded6_lighttpd-223f0fe0"
           git_reference: ${{ github.sha }}
           fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
       - id: monitor-fuzzing
