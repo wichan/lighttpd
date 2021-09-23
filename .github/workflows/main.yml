@@ -1,4 +1,4 @@
-name: CI
+name: CI Fuzz
 
 on:
   push:
@@ -7,44 +7,60 @@ on:
     branches: [ master ]
 
 env:
-  PROJECT_NAME: lighttpd  
+  FUZZING_SERVER_ADDRESS: app.code-intelligence.com:6773
+  WEB_APP_ADDRESS:  https://app.code-intelligence.com
+  PROJECT_ID: projects/18482300_github_lighttpd-223f0fe0
+
 
 jobs:
-  fuzz_default_campaign:
+  fuzz_tests:
     runs-on: ubuntu-latest
     steps:
       - id: start-fuzzing
-        name: Build And Start Fuzzing
-        uses: CodeIntelligenceTesting/github-actions/start-fuzzing@master
+        name: Build and Instrument
+        uses: CodeIntelligenceTesting/github-actions/start-fuzzing@v3
         with:
-          cognito_user: ${{ secrets.COGNITO_USER }}
-          cognito_password: ${{ secrets.COGNITO_PASSWORD }}
-          project: ${{ env.PROJECT_NAME }}
-          test_collection: "default_campaign"          
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN }}
+          project: ${{ env.PROJECT_ID }}
+          git_reference: ${{ github.sha }}
+          fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
       - id: monitor-fuzzing
-        name: Monitor Fuzzing
-        uses: CodeIntelligenceTesting/github-actions/monitor-fuzzing@master
+        name: Fuzzing
+        uses: CodeIntelligenceTesting/github-actions/monitor-fuzzing@v3
         with:
-          cognito_user: ${{ secrets.COGNITO_USER }}
-          cognito_password: ${{ secrets.COGNITO_PASSWORD }}
-          project: ${{ env.PROJECT_NAME }}
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN }}
           test_collection_run: ${{ steps.start-fuzzing.outputs.test_collection_run }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pull_request_number: ${{ github.event.pull_request.number }}
           owner: ${{ github.event.repository.owner.login }}
           repository: ${{ github.event.repository.name }}
+          fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
+          dashboard_address: ${{ env.WEB_APP_ADDRESS }}
       - id: report-coverage
         name: Report Coverage
-        uses: CodeIntelligenceTesting/github-actions/report-coverage@master
-        if: ${{ success() || failure() }}
+        uses: CodeIntelligenceTesting/github-actions/report-coverage@v3
+        if: ${{ github.event_name == 'pull_request' && (success() || failure()) }}
         with:
-          cognito_user: ${{ secrets.COGNITO_USER }}
-          cognito_password: ${{ secrets.COGNITO_PASSWORD }}
-          project: ${{ env.PROJECT_NAME }}
-          test_collection: "default_campaign"
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN }}
+          test_collection_run: ${{ steps.start-fuzzing.outputs.test_collection_run }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           pull_request_number: ${{ github.event.pull_request.number }}
           owner: ${{ github.event.repository.owner.login }}
           repository: ${{ github.event.repository.name }}
-          commit: ${{ github.sha }}
+          git_reference: ${{ github.sha }}
+          fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
+          dashboard_address: ${{ env.WEB_APP_ADDRESS }}
+      - id: list-findings
+        name: List Findings
+        uses: CodeIntelligenceTesting/github-actions/list-findings@v3 
+        if: ${{ github.event_name == 'pull_request' && (success() || failure()) }}
+        with:
+          name: 'CI Fuzz Findings'
+          test_collection_run: ${{ steps.start-fuzzing.outputs.test_collection_run }}
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN }}
+          dashboard_address: ${{env.WEB_APP_ADDRESS}}
+          project: ${{env.PROJECT_ID}}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          owner: ${{ github.event.repository.owner.login }}
+          repository: ${{ github.event.repository.name }}
           
