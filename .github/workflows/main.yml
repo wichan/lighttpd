@@ -1,4 +1,4 @@
-name: CI
+name: CI Fuzz
 
 on:
   push:
@@ -7,44 +7,59 @@ on:
     branches: [ master ]
 
 env:
-  PROJECT_NAME: lighttpd  
+  FUZZING_SERVER_ADDRESS: grpc.dev.code-intelligence.com:443
+  WEB_APP_ADDRESS: https://app.dev.code-intelligence.com
+  CHECKOUT_DIR: checkout-dir/
+
 
 jobs:
-  fuzz_default_campaign:
+  fuzz_tests:
     runs-on: ubuntu-latest
+    container: cifuzz/builders:lighttpd
     steps:
+      - id: checkout
+        name: Checkout
+        uses: actions/checkout@v2
+        with:
+          path: ${{ env.CHECKOUT_DIR }}
+      - id: install-build-tools
+        name: Install Fuzzer Build Tools
+        uses: CodeIntelligenceTesting/github-actions/install-fuzzer-builder@v3
+      - id: build-fuzzers
+        name: Build Fuzzers
+        run: ci-fuzz/bin/ci-build fuzzers --directory $GITHUB_WORKSPACE/$CHECKOUT_DIR/ 
+        shell: "bash"
       - id: start-fuzzing
-        name: Build And Start Fuzzing
-        uses: CodeIntelligenceTesting/github-actions/start-fuzzing@master
+        name: Start Fuzzing
+        uses: CodeIntelligenceTesting/github-actions/start-fuzzing@v3
         with:
-          cognito_user: ${{ secrets.COGNITO_USER }}
-          cognito_password: ${{ secrets.COGNITO_PASSWORD }}
-          project: ${{ env.PROJECT_NAME }}
-          test_collection: "default_campaign"          
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN_APP_DEV }}
+          fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
+          fuzzing_artifact: ${{ env.CHECKOUT_DIR }}/fuzzing-artifacts.tar
+          checkout_directory: ${{ env.CHECKOUT_DIR }}
       - id: monitor-fuzzing
-        name: Monitor Fuzzing
-        uses: CodeIntelligenceTesting/github-actions/monitor-fuzzing@master
+        name: Fuzzing
+        uses: CodeIntelligenceTesting/github-actions/monitor-fuzzing@v3
         with:
-          cognito_user: ${{ secrets.COGNITO_USER }}
-          cognito_password: ${{ secrets.COGNITO_PASSWORD }}
-          project: ${{ env.PROJECT_NAME }}
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN_APP_DEV }}
           test_collection_run: ${{ steps.start-fuzzing.outputs.test_collection_run }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          pull_request_number: ${{ github.event.pull_request.number }}
-          owner: ${{ github.event.repository.owner.login }}
-          repository: ${{ github.event.repository.name }}
-      - id: report-coverage
-        name: Report Coverage
-        uses: CodeIntelligenceTesting/github-actions/report-coverage@master
+          fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
+          dashboard_address: ${{ env.WEB_APP_ADDRESS }}
+      - id: save-results
+        name: Save Fuzz Test Results
+        uses: CodeIntelligenceTesting/github-actions/save-results@v3
         if: ${{ success() || failure() }}
         with:
-          cognito_user: ${{ secrets.COGNITO_USER }}
-          cognito_password: ${{ secrets.COGNITO_PASSWORD }}
-          project: ${{ env.PROJECT_NAME }}
-          test_collection: "default_campaign"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          pull_request_number: ${{ github.event.pull_request.number }}
-          owner: ${{ github.event.repository.owner.login }}
-          repository: ${{ github.event.repository.name }}
-          commit: ${{ github.sha }}
-          
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN_APP_DEV }}
+          test_collection_run: ${{ steps.start-fuzzing.outputs.test_collection_run }}
+          fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
+          dashboard_address: ${{ env.WEB_APP_ADDRESS }}
+      - id: upload-artifact
+        uses: actions/upload-artifact@v2
+        if: ${{ (success() || failure()) }}
+        with:
+          name: ci_fuzz_results
+          path: | 
+            findings.json
+            coverage.json
+            web_app_address.txt
