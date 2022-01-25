@@ -33,7 +33,7 @@ jobs:
         name: Start Fuzzing
         uses: CodeIntelligenceTesting/github-actions/start-fuzzing@v3
         with:
-          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN_APP_DEV }}
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN }}
           fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
           fuzzing_artifact: ${{ env.CHECKOUT_DIR }}/fuzzing-artifacts.tar
           checkout_directory: ${{ env.CHECKOUT_DIR }}
@@ -41,7 +41,7 @@ jobs:
         name: Fuzzing
         uses: CodeIntelligenceTesting/github-actions/monitor-fuzzing@v3
         with:
-          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN_APP_DEV }}
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN }}
           test_collection_run: ${{ steps.start-fuzzing.outputs.test_collection_run }}
           fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
           dashboard_address: ${{ env.WEB_APP_ADDRESS }}
@@ -50,7 +50,7 @@ jobs:
         uses: CodeIntelligenceTesting/github-actions/save-results@v3
         if: ${{ success() || failure() }}
         with:
-          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN_APP_DEV }}
+          ci_fuzz_api_token: ${{ secrets.CI_FUZZ_API_TOKEN }}
           test_collection_run: ${{ steps.start-fuzzing.outputs.test_collection_run }}
           fuzzing_server_address: ${{ env.FUZZING_SERVER_ADDRESS }}
           dashboard_address: ${{ env.WEB_APP_ADDRESS }}
